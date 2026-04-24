@@ -1,1086 +1,972 @@
 <!DOCTYPE html>
 <html lang="nl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>Wilco en de Pijp</title>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+<title>Wilco en de Pijp</title>
 
-  <style>
-    :root {
-      --bg: #070707;
-      --panel: rgba(18, 18, 18, .82);
-      --panel-strong: rgba(26, 26, 26, .94);
-      --line: rgba(255, 255, 255, .1);
-      --text: #f6f2e8;
-      --muted: rgba(246, 242, 232, .62);
-      --orange: #ff7a1a;
-      --red: #ff3b30;
-      --green: #3cff9e;
-      --blue: #38bdf8;
-      --yellow: #ffd166;
-      --purple: #a855f7;
-    }
-
-    * {
-      box-sizing: border-box;
-      -webkit-tap-highlight-color: transparent;
-      user-select: none;
-    }
-
-    html,
-    body {
-      width: 100%;
-      height: 100%;
-      margin: 0;
-      overflow: hidden;
-      background:
-        radial-gradient(circle at 30% 15%, rgba(255, 122, 26, .22), transparent 28%),
-        radial-gradient(circle at 78% 24%, rgba(168, 85, 247, .18), transparent 30%),
-        linear-gradient(180deg, #0a0a0a 0%, #030303 100%);
-      color: var(--text);
-      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    }
-
-    .app {
-      width: 100%;
-      height: 100dvh;
-      display: grid;
-      grid-template-rows: auto 1fr auto;
-      padding: max(14px, env(safe-area-inset-top)) 14px max(14px, env(safe-area-inset-bottom));
-      gap: 12px;
-    }
-
-    .hud {
-      width: min(100%, 1040px);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 10px;
-      z-index: 5;
-    }
-
-    .title-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-    }
-
-    .brand {
-      min-width: 0;
-    }
-
-    .eyebrow {
-      font-size: 10px;
-      letter-spacing: .22em;
-      text-transform: uppercase;
-      color: var(--orange);
-      font-weight: 800;
-    }
-
-    h1 {
-      margin: 2px 0 0;
-      font-size: clamp(21px, 6vw, 34px);
-      line-height: .96;
-      letter-spacing: -.05em;
-    }
-
-    .pill {
-      flex: 0 0 auto;
-      height: 34px;
-      padding: 0 12px;
-      border: 1px solid var(--line);
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .06);
-      display: inline-flex;
-      align-items: center;
-      gap: 7px;
-      font-size: 12px;
-      color: var(--muted);
-      backdrop-filter: blur(16px);
-    }
-
-    .stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-    }
-
-    .card {
-      min-width: 0;
-      border: 1px solid var(--line);
-      border-radius: 18px;
-      background: var(--panel);
-      backdrop-filter: blur(18px);
-      box-shadow: 0 18px 60px rgba(0, 0, 0, .34);
-      padding: 10px;
-    }
-
-    .label {
-      color: var(--muted);
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: .12em;
-      font-weight: 800;
-      white-space: nowrap;
-    }
-
-    .value {
-      margin-top: 3px;
-      font-size: clamp(18px, 5vw, 28px);
-      font-weight: 900;
-      letter-spacing: -.05em;
-      line-height: 1;
-    }
-
-    .meter {
-      grid-column: 1 / -1;
-      padding: 12px;
-    }
-
-    .meter-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      gap: 10px;
-    }
-
-    .meter-text {
-      color: var(--muted);
-      font-size: 12px;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-    }
-
-    .bar {
-      height: 12px;
-      border-radius: 999px;
-      background: rgba(255, 255, 255, .08);
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, .08);
-    }
-
-    .fill {
-      height: 100%;
-      width: 0%;
-      border-radius: 999px;
-      background: linear-gradient(90deg, var(--green), var(--yellow), var(--orange), var(--red), var(--purple));
-      box-shadow: 0 0 28px rgba(255, 122, 26, .6);
-      transition: width .12s linear;
-    }
-
-    .stage {
-      position: relative;
-      width: min(100%, 1040px);
-      height: 100%;
-      min-height: 0;
-      margin: 0 auto;
-      border: 1px solid rgba(255, 255, 255, .12);
-      border-radius: 24px;
-      overflow: hidden;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .05), rgba(255, 255, 255, .015)),
-        #0a0a0a;
-      box-shadow: 0 30px 100px rgba(0, 0, 0, .55);
-    }
-
-    canvas {
-      display: block;
-      width: 100%;
-      height: 100%;
-      touch-action: none;
-    }
-
-    .overlay {
-      position: absolute;
-      inset: 0;
-      z-index: 4;
-      display: grid;
-      place-items: center;
-      padding: 18px;
-      background:
-        radial-gradient(circle at 50% 30%, rgba(255, 122, 26, .2), transparent 32%),
-        rgba(0, 0, 0, .58);
-      backdrop-filter: blur(10px);
-    }
-
-    .modal {
-      width: min(100%, 520px);
-      border: 1px solid rgba(255, 255, 255, .14);
-      border-radius: 28px;
-      background: var(--panel-strong);
-      box-shadow: 0 30px 120px rgba(0, 0, 0, .65);
-      padding: 22px;
-      text-align: center;
-    }
-
-    .modal h2 {
-      margin: 0;
-      font-size: clamp(34px, 12vw, 68px);
-      line-height: .9;
-      letter-spacing: -.08em;
-    }
-
-    .modal p {
-      color: var(--muted);
-      font-size: 15px;
-      line-height: 1.5;
-      margin: 14px auto 0;
-      max-width: 390px;
-    }
-
-    .button {
-      width: 100%;
-      min-height: 58px;
-      margin-top: 18px;
-      border: 0;
-      border-radius: 18px;
-      background: linear-gradient(135deg, #ff8a1f, #ff3b30);
-      color: #fff;
-      font-weight: 950;
-      font-size: 15px;
-      letter-spacing: .08em;
-      text-transform: uppercase;
-      box-shadow: 0 18px 50px rgba(255, 96, 24, .32);
-      cursor: pointer;
-    }
-
-    .button:active {
-      transform: translateY(1px) scale(.99);
-    }
-
-    .tips {
-      display: grid;
-      grid-template-columns: 1fr;
-      gap: 8px;
-      margin-top: 16px;
-      text-align: left;
-    }
-
-    .tip {
-      border: 1px solid rgba(255, 255, 255, .08);
-      border-radius: 16px;
-      background: rgba(255, 255, 255, .045);
-      padding: 11px 12px;
-      font-size: 13px;
-      color: var(--muted);
-    }
-
-    .controls {
-      width: min(100%, 1040px);
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-      z-index: 5;
-    }
-
-    .control-btn {
-      min-height: 64px;
-      border: 1px solid rgba(255, 255, 255, .12);
-      border-radius: 22px;
-      background:
-        linear-gradient(180deg, rgba(255, 255, 255, .11), rgba(255, 255, 255, .05)),
-        rgba(16, 16, 16, .86);
-      color: var(--text);
-      font-size: 14px;
-      font-weight: 950;
-      letter-spacing: .12em;
-      text-transform: uppercase;
-      backdrop-filter: blur(16px);
-      box-shadow: 0 16px 50px rgba(0, 0, 0, .32);
-    }
-
-    .control-btn.primary {
-      background: linear-gradient(135deg, rgba(255, 122, 26, .96), rgba(255, 59, 48, .92));
-      border-color: rgba(255, 255, 255, .16);
-    }
-
-    .control-btn:active {
-      transform: translateY(1px) scale(.99);
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    @media (min-width: 760px) {
-      .app {
-        padding: 22px;
-        gap: 14px;
-      }
-
-      .hud {
-        grid-template-columns: 1.35fr 2fr;
-        align-items: end;
-      }
-
-      .title-row {
-        height: 100%;
-      }
-
-      .stats {
-        grid-template-columns: repeat(3, 1fr);
-      }
-
-      .meter {
-        grid-column: 1 / -1;
-      }
-
-      .controls {
-        display: none;
-      }
-    }
-
-    @media (max-height: 690px) {
-      .modal {
-        padding: 18px;
-      }
-
-      .tips {
-        display: none;
-      }
-
-      .control-btn {
-        min-height: 56px;
-      }
-    }
-  </style>
+<style>
+:root{
+  --bg:#080706;
+  --cream:#fff2d8;
+  --ink:#21160f;
+  --orange:#ff7a1a;
+  --red:#ff3344;
+  --purple:#9b5cff;
+  --blue:#4dd7ff;
+  --green:#54ff9b;
+  --yellow:#ffd84d;
+}
+*{box-sizing:border-box;user-select:none;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  background:#050505;
+  color:var(--cream);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+}
+.app{
+  width:100%;
+  height:100dvh;
+  display:grid;
+  grid-template-rows:auto 1fr auto;
+  gap:10px;
+  padding:max(12px,env(safe-area-inset-top)) 12px max(12px,env(safe-area-inset-bottom));
+  background:
+    radial-gradient(circle at 25% 15%,rgba(255,122,26,.24),transparent 28%),
+    radial-gradient(circle at 80% 20%,rgba(155,92,255,.2),transparent 34%),
+    linear-gradient(180deg,#111,#050505);
+}
+.hud{
+  width:min(100%,1120px);
+  margin:auto;
+  display:grid;
+  gap:8px;
+}
+.top{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  gap:12px;
+}
+.eyebrow{
+  font-size:10px;
+  letter-spacing:.2em;
+  text-transform:uppercase;
+  color:var(--orange);
+  font-weight:900;
+}
+h1{
+  margin:1px 0 0;
+  font-size:clamp(24px,7vw,42px);
+  line-height:.9;
+  letter-spacing:-.07em;
+}
+.badge{
+  height:34px;
+  border:2px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.08);
+  border-radius:999px;
+  padding:0 12px;
+  display:flex;
+  align-items:center;
+  font-size:12px;
+  font-weight:900;
+  white-space:nowrap;
+}
+.stats{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:7px;
+}
+.card{
+  border:2px solid rgba(255,255,255,.12);
+  background:rgba(20,16,14,.84);
+  box-shadow:0 14px 42px rgba(0,0,0,.34);
+  border-radius:18px;
+  padding:9px;
+}
+.label{
+  color:rgba(255,242,216,.62);
+  font-size:9px;
+  text-transform:uppercase;
+  letter-spacing:.13em;
+  font-weight:900;
+}
+.value{
+  margin-top:3px;
+  font-size:clamp(16px,5vw,27px);
+  font-weight:1000;
+  letter-spacing:-.06em;
+  line-height:1;
+}
+.meter{
+  grid-column:1/-1;
+}
+.meterTop{
+  display:flex;
+  justify-content:space-between;
+  gap:10px;
+  margin-bottom:7px;
+}
+.quote{
+  color:rgba(255,242,216,.62);
+  font-size:12px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+.bar{
+  height:13px;
+  background:rgba(255,255,255,.1);
+  border:2px solid rgba(255,255,255,.1);
+  border-radius:999px;
+  overflow:hidden;
+}
+.fill{
+  width:0%;
+  height:100%;
+  background:linear-gradient(90deg,var(--green),var(--yellow),var(--orange),var(--red),var(--purple));
+  box-shadow:0 0 28px rgba(255,122,26,.65);
+}
+.stage{
+  position:relative;
+  width:min(100%,1120px);
+  height:100%;
+  min-height:0;
+  margin:auto;
+  border:3px solid rgba(255,255,255,.14);
+  border-radius:28px;
+  overflow:hidden;
+  background:#85d9ff;
+  box-shadow:0 30px 100px rgba(0,0,0,.55);
+}
+canvas{
+  display:block;
+  width:100%;
+  height:100%;
+  touch-action:none;
+}
+.overlay{
+  position:absolute;
+  inset:0;
+  z-index:20;
+  display:grid;
+  place-items:center;
+  padding:18px;
+  background:rgba(0,0,0,.46);
+  backdrop-filter:blur(8px);
+}
+.modal{
+  width:min(100%,540px);
+  text-align:center;
+  background:rgba(26,18,14,.94);
+  border:3px solid rgba(255,255,255,.16);
+  border-radius:30px;
+  box-shadow:0 30px 120px rgba(0,0,0,.7);
+  padding:22px;
+}
+.modal h2{
+  margin:0;
+  font-size:clamp(40px,13vw,74px);
+  line-height:.86;
+  letter-spacing:-.08em;
+}
+.modal p{
+  margin:14px auto 0;
+  max-width:420px;
+  color:rgba(255,242,216,.72);
+  font-size:15px;
+  line-height:1.5;
+}
+.btn{
+  width:100%;
+  min-height:60px;
+  margin-top:18px;
+  border:0;
+  border-radius:20px;
+  background:linear-gradient(135deg,#ff9b25,#ff3344);
+  color:white;
+  font-size:15px;
+  font-weight:1000;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+  box-shadow:0 18px 54px rgba(255,85,28,.35);
+}
+.controls{
+  width:min(100%,1120px);
+  margin:auto;
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+.ctrl{
+  min-height:62px;
+  border:2px solid rgba(255,255,255,.13);
+  border-radius:22px;
+  background:rgba(24,20,18,.88);
+  color:white;
+  font-weight:1000;
+  letter-spacing:.1em;
+  text-transform:uppercase;
+}
+.ctrl.primary{
+  background:linear-gradient(135deg,#ff8d20,#ff3344);
+}
+.hidden{display:none!important}
+.bossBanner{
+  position:absolute;
+  left:50%;
+  top:24px;
+  transform:translateX(-50%);
+  z-index:10;
+  width:min(calc(100% - 28px),720px);
+  border:3px solid rgba(255,255,255,.2);
+  border-radius:24px;
+  background:linear-gradient(135deg,rgba(255,51,68,.94),rgba(155,92,255,.94));
+  box-shadow:0 24px 70px rgba(0,0,0,.48);
+  padding:14px;
+  text-align:center;
+  font-weight:1000;
+  letter-spacing:-.03em;
+  animation:bounceIn .65s cubic-bezier(.2,1.4,.3,1);
+}
+.bossBanner small{
+  display:block;
+  margin-bottom:2px;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.22em;
+  color:rgba(255,255,255,.72);
+}
+.bossBanner strong{
+  display:block;
+  font-size:clamp(18px,5vw,32px);
+}
+@keyframes bounceIn{
+  0%{transform:translateX(-50%) scale(.7);opacity:0}
+  70%{transform:translateX(-50%) scale(1.05);opacity:1}
+  100%{transform:translateX(-50%) scale(1)}
+}
+@media(min-width:800px){
+  .app{padding:18px;gap:12px}
+  .hud{grid-template-columns:.95fr 1.6fr;align-items:end}
+  .stats{grid-template-columns:repeat(4,1fr)}
+  .meter{grid-column:1/-1}
+  .controls{display:none}
+}
+@media(max-width:520px){
+  .stats{grid-template-columns:repeat(2,1fr)}
+  .meter{grid-column:1/-1}
+}
+@media(max-height:680px){
+  .modal p{display:none}
+  .card{padding:7px}
+  .ctrl{min-height:54px}
+}
+</style>
 </head>
 
 <body>
-  <main class="app">
-    <section class="hud">
-      <div class="title-row">
-        <div class="brand">
-          <div class="eyebrow">Friese chaos simulator</div>
-          <h1>Wilco en de Pijp</h1>
-        </div>
-        <div class="pill">🎧 geluid aan</div>
+<main class="app">
+  <section class="hud">
+    <div class="top">
+      <div>
+        <div class="eyebrow">Cartoon chaos platformer</div>
+        <h1>Wilco en de Pijp</h1>
       </div>
+      <div class="badge">🎮 drugs are bad mkay</div>
+    </div>
 
-      <div class="stats">
-        <div class="card">
-          <div class="label">Score</div>
-          <div class="value" id="score">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Highscore</div>
-          <div class="value" id="highscore">0</div>
-        </div>
-        <div class="card">
-          <div class="label">Status</div>
-          <div class="value" id="status">Chill</div>
-        </div>
-
-        <div class="card meter">
-          <div class="meter-top">
-            <div class="label">Parra meter</div>
-            <div class="meter-text" id="quote">Pak wolkjes. Ontwijk realiteit.</div>
-          </div>
-          <div class="bar">
-            <div class="fill" id="parraFill"></div>
-          </div>
-        </div>
+    <div class="stats">
+      <div class="card">
+        <div class="label">Score</div>
+        <div class="value" id="score">0</div>
       </div>
-    </section>
-
-    <section class="stage" id="stage">
-      <canvas id="game"></canvas>
-
-      <div class="overlay" id="startScreen">
-        <div class="modal">
-          <h2>Word parra.</h2>
-          <p>Spring over paniekblokken, pak absurde wolkjes en laat Wilco compleet ontsporen. Hoe hoger de parra, hoe meer chaos.</p>
-          <button class="button" id="startBtn">Start game</button>
-
-          <div class="tips">
-            <div class="tip">Mobiel: tik op SPRING.</div>
-            <div class="tip">Desktop: spatiebalk of klik.</div>
-            <div class="tip">Doel: maximale score voordat Wilco de controle kwijt is.</div>
-          </div>
-        </div>
+      <div class="card">
+        <div class="label">Highscore</div>
+        <div class="value" id="highscore">0</div>
       </div>
-
-      <div class="overlay hidden" id="gameOverScreen">
-        <div class="modal">
-          <h2>Parra bereikt.</h2>
-          <p id="endText">Wilco zag een jas aan voor een belastingbrief.</p>
-          <button class="button" id="restartBtn">Nog een rondje chaos</button>
-        </div>
+      <div class="card">
+        <div class="label">Pijpjes</div>
+        <div class="value" id="pipes">0</div>
       </div>
-    </section>
-
-    <section class="controls">
-      <button class="control-btn" id="duckBtn">Buk</button>
-      <button class="control-btn primary" id="jumpBtn">Spring</button>
-    </section>
-  </main>
-
-  <script>
-    const canvas = document.getElementById("game");
-    const ctx = canvas.getContext("2d");
-
-    const scoreEl = document.getElementById("score");
-    const highscoreEl = document.getElementById("highscore");
-    const statusEl = document.getElementById("status");
-    const quoteEl = document.getElementById("quote");
-    const parraFill = document.getElementById("parraFill");
-
-    const startScreen = document.getElementById("startScreen");
-    const gameOverScreen = document.getElementById("gameOverScreen");
-    const startBtn = document.getElementById("startBtn");
-    const restartBtn = document.getElementById("restartBtn");
-    const jumpBtn = document.getElementById("jumpBtn");
-    const duckBtn = document.getElementById("duckBtn");
-    const endText = document.getElementById("endText");
-
-    const WORLD = {
-      width: 1000,
-      height: 520,
-      ground: 430
-    };
-
-    let scale = 1;
-    let dpr = Math.min(window.devicePixelRatio || 1, 2);
-    let running = false;
-    let gameOver = false;
-    let ducking = false;
-    let frame = 0;
-    let score = 0;
-    let highscore = Number(localStorage.getItem("wilco_highscore") || 0);
-    let parra = 0;
-    let speed = 5.2;
-    let shake = 0;
-
-    let obstacles = [];
-    let clouds = [];
-    let particles = [];
-    let texts = [];
-
-    const player = {
-      x: 92,
-      y: WORLD.ground - 82,
-      w: 54,
-      h: 82,
-      vy: 0,
-      grounded: true
-    };
-
-    const quotes = [
-      "Wilco hoort de koelkast ademen.",
-      "De tegels kijken terug.",
-      "Friesland belt, maar Wilco neemt niet op.",
-      "Elke wolk is een keuze.",
-      "Status: verdachte rust.",
-      "De vloer maakt rare plannen.",
-      "Kevin zou dit niet goedkeuren.",
-      "Balie KPI volledig ontspoord.",
-      "Dit is geen forecast. Dit is paniek.",
-      "Wilco vertrouwt de deurklink niet."
-    ];
-
-    const endLines = [
-      "Wilco zag een jas aan voor een belastingbrief.",
-      "Wilco heeft ruzie met een lamp gewonnen.",
-      "Wilco is ingehaald door zijn eigen schaduw.",
-      "Wilco dacht dat de vloer een mening had.",
-      "Wilco heeft de KPI parra ruimschoots gehaald."
-    ];
-
-    const AudioEngine = {
-      ctx: null,
-      muted: false,
-
-      init() {
-        if (!this.ctx) {
-          this.ctx = new (window.AudioContext || window.webkitAudioContext)();
-        }
-        if (this.ctx.state === "suspended") this.ctx.resume();
-      },
-
-      tone(freq, duration, type = "sine", gain = .04, slide = 0) {
-        if (!this.ctx || this.muted) return;
-
-        const osc = this.ctx.createOscillator();
-        const vol = this.ctx.createGain();
-
-        osc.type = type;
-        osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
-        if (slide) osc.frequency.exponentialRampToValueAtTime(Math.max(30, freq + slide), this.ctx.currentTime + duration);
-
-        vol.gain.setValueAtTime(gain, this.ctx.currentTime);
-        vol.gain.exponentialRampToValueAtTime(.001, this.ctx.currentTime + duration);
-
-        osc.connect(vol);
-        vol.connect(this.ctx.destination);
-        osc.start();
-        osc.stop(this.ctx.currentTime + duration);
-      },
-
-      noise(duration = .12, gain = .045) {
-        if (!this.ctx || this.muted) return;
-
-        const bufferSize = this.ctx.sampleRate * duration;
-        const buffer = this.ctx.createBuffer(1, bufferSize, this.ctx.sampleRate);
-        const data = buffer.getChannelData(0);
-
-        for (let i = 0; i < bufferSize; i++) {
-          data[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / bufferSize, 2);
-        }
-
-        const source = this.ctx.createBufferSource();
-        const vol = this.ctx.createGain();
-
-        vol.gain.value = gain;
-        source.buffer = buffer;
-        source.connect(vol);
-        vol.connect(this.ctx.destination);
-        source.start();
-      },
-
-      jump() {
-        this.tone(280, .11, "square", .035, 240);
-      },
-
-      collect() {
-        this.tone(620, .08, "sine", .04, 420);
-        setTimeout(() => this.tone(880, .08, "triangle", .03, 120), 48);
-      },
-
-      hit() {
-        this.noise(.28, .075);
-        this.tone(120, .28, "sawtooth", .05, -70);
-      },
-
-      tick() {
-        this.tone(160 + parra * 5, .04, "square", .012);
-      }
-    };
-
-    function resize() {
-      const rect = canvas.parentElement.getBoundingClientRect();
-
-      canvas.width = Math.floor(rect.width * dpr);
-      canvas.height = Math.floor(rect.height * dpr);
-
-      ctx.setTransform(1, 0, 0, 1, 0, 0);
-      ctx.scale(canvas.width / WORLD.width, canvas.height / WORLD.height);
-    }
-
-    function reset() {
-      running = true;
-      gameOver = false;
-      ducking = false;
-      frame = 0;
-      score = 0;
-      parra = 0;
-      speed = 5.2;
-      shake = 0;
-
-      obstacles = [];
-      clouds = [];
-      particles = [];
-      texts = [];
-
-      player.x = 92;
-      player.y = WORLD.ground - 82;
-      player.vy = 0;
-      player.grounded = true;
-
-      startScreen.classList.add("hidden");
-      gameOverScreen.classList.add("hidden");
-      updateUI();
-    }
-
-    function startGame() {
-      AudioEngine.init();
-      reset();
-    }
-
-    function endGame() {
-      gameOver = true;
-      running = false;
-      AudioEngine.hit();
-
-      if (score > highscore) {
-        highscore = score;
-        localStorage.setItem("wilco_highscore", String(highscore));
-      }
-
-      endText.textContent = endLines[Math.floor(Math.random() * endLines.length)];
-      gameOverScreen.classList.remove("hidden");
-      updateUI();
-    }
-
-    function jump() {
-      if (!running || gameOver) return;
-
-      if (player.grounded) {
-        player.vy = -15.6;
-        player.grounded = false;
-        AudioEngine.jump();
-        addText(player.x + 22, player.y - 18, "HOPPA");
-      }
-    }
-
-    function setDuck(value) {
-      ducking = value;
-    }
-
-    function spawnObstacle() {
-      const types = [
-        { name: "paniekblok", w: 42, h: 58, color: "#ff3b30", text: "PANIEK" },
-        { name: "belastingbrief", w: 54, h: 42, color: "#f97316", text: "BRIEF" },
-        { name: "vreemde jas", w: 48, h: 70, color: "#a855f7", text: "JAS" }
-      ];
-
-      const t = types[Math.floor(Math.random() * types.length)];
-
-      obstacles.push({
-        x: WORLD.width + 40,
-        y: WORLD.ground - t.h,
-        w: t.w,
-        h: t.h,
-        color: t.color,
-        text: t.text,
-        wobble: Math.random() * Math.PI * 2
-      });
-    }
-
-    function spawnCloud() {
-      clouds.push({
-        x: WORLD.width + 30,
-        y: 210 + Math.random() * 130,
-        r: 17 + Math.random() * 8,
-        pulse: Math.random() * Math.PI * 2
-      });
-    }
-
-    function addParticles(x, y, count, color) {
-      for (let i = 0; i < count; i++) {
-        particles.push({
-          x,
-          y,
-          vx: (Math.random() - .5) * 7,
-          vy: (Math.random() - .5) * 7,
-          life: 42,
-          color,
-          size: 2 + Math.random() * 5
-        });
-      }
-    }
-
-    function addText(x, y, text) {
-      texts.push({
-        x,
-        y,
-        text,
-        life: 54
-      });
-    }
-
-    function rectHit(a, b) {
-      return a.x < b.x + b.w &&
-        a.x + a.w > b.x &&
-        a.y < b.y + b.h &&
-        a.y + a.h > b.y;
-    }
-
-    function circleHit(rect, circle) {
-      const cx = Math.max(rect.x, Math.min(circle.x, rect.x + rect.w));
-      const cy = Math.max(rect.y, Math.min(circle.y, rect.y + rect.h));
-      const dx = circle.x - cx;
-      const dy = circle.y - cy;
-      return dx * dx + dy * dy < circle.r * circle.r;
-    }
-
-    function update() {
-      if (!running || gameOver) return;
-
-      frame++;
-      score += Math.floor(1 + speed * .06);
-
-      parra += .018 + score * .0000015;
-      parra = Math.min(parra, 100);
-
-      speed = 5.2 + parra * .055 + score * .0009;
-
-      const playerHeight = ducking && player.grounded ? 52 : 82;
-      player.h += (playerHeight - player.h) * .35;
-      player.y += player.vy;
-      player.vy += .74;
-
-      if (player.y + player.h >= WORLD.ground) {
-        player.y = WORLD.ground - player.h;
-        player.vy = 0;
-        player.grounded = true;
-      }
-
-      if (frame % Math.max(52, Math.floor(112 - speed * 6)) === 0) spawnObstacle();
-      if (frame % Math.max(48, Math.floor(78 - parra * .24)) === 0) spawnCloud();
-
-      obstacles.forEach(o => {
-        o.x -= speed;
-        o.wobble += .07 + parra * .002;
-      });
-
-      clouds.forEach(c => {
-        c.x -= speed * .88;
-        c.pulse += .11;
-      });
-
-      particles.forEach(p => {
-        p.x += p.vx;
-        p.y += p.vy;
-        p.vy += .08;
-        p.life--;
-      });
-
-      texts.forEach(t => {
-        t.y -= .65;
-        t.life--;
-      });
-
-      obstacles = obstacles.filter(o => o.x > -100);
-      clouds = clouds.filter(c => c.x > -60);
-      particles = particles.filter(p => p.life > 0);
-      texts = texts.filter(t => t.life > 0);
-
-      const playerBox = {
-        x: player.x + 6,
-        y: player.y + 8,
-        w: player.w - 12,
-        h: player.h - 8
-      };
-
-      for (const o of obstacles) {
-        if (rectHit(playerBox, o)) {
-          shake = 18;
-          endGame();
-          return;
-        }
-      }
-
-      clouds.forEach((c, i) => {
-        if (circleHit(playerBox, c)) {
-          clouds.splice(i, 1);
-          score += 150;
-          parra = Math.min(100, parra + 8.5);
-          shake = Math.min(28, shake + 6);
-          addParticles(c.x, c.y, 24, "#38bdf8");
-          addText(c.x - 10, c.y - 22, "+ PARRA");
-          AudioEngine.collect();
-        }
-      });
-
-      if (parra > 98) {
-        if (frame % 22 === 0) AudioEngine.tick();
-        shake = Math.max(shake, 5);
-      }
-
-      shake *= .88;
-
-      updateUI();
-    }
-
-    function updateUI() {
-      scoreEl.textContent = score;
-      highscoreEl.textContent = highscore;
-      parraFill.style.width = `${parra}%`;
-
-      if (parra < 35) {
-        statusEl.textContent = "Chill";
-        quoteEl.textContent = "Pak wolkjes. Ontwijk realiteit.";
-      } else if (parra < 65) {
-        statusEl.textContent = "Scherp";
-        quoteEl.textContent = quotes[Math.floor(frame / 180) % quotes.length];
-      } else if (parra < 86) {
-        statusEl.textContent = "Schichtig";
-        quoteEl.textContent = quotes[Math.floor(frame / 110) % quotes.length];
-      } else {
-        statusEl.textContent = "Parra";
-        quoteEl.textContent = quotes[Math.floor(frame / 55) % quotes.length];
+      <div class="card">
+        <div class="label">Status</div>
+        <div class="value" id="status">Chill</div>
+      </div>
+      <div class="card meter">
+        <div class="meterTop">
+          <div class="label">Parra meter</div>
+          <div class="quote" id="quote">Pak pijpjes. Ontwijk vijanden. Word compleet para.</div>
+        </div>
+        <div class="bar"><div class="fill" id="fill"></div></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="stage">
+    <canvas id="game"></canvas>
+
+    <div class="bossBanner hidden" id="bossBanner">
+      <small>🚨 vijand gespot 🚨</small>
+      <strong id="bossName">Jelmer de propaganda stofzuiger</strong>
+    </div>
+
+    <div class="overlay" id="start">
+      <div class="modal">
+        <h2>Ren. Rook. Raak para.</h2>
+        <p>Een absurde cartoon platformer waarin Wilco door Friesland rent, pijpjes pakt en steeds verder ontspoort. Spring over vijanden en haal maximale chaos.</p>
+        <button class="btn" id="startBtn">Start game</button>
+      </div>
+    </div>
+
+    <div class="overlay hidden" id="over">
+      <div class="modal">
+        <h2>Wilco is op.</h2>
+        <p id="endText">De stofzuiger had toch gelijk.</p>
+        <button class="btn" id="restartBtn">Nog een keer</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="controls">
+    <button class="ctrl" id="leftBtn">Links</button>
+    <button class="ctrl primary" id="jumpBtn">Spring</button>
+    <button class="ctrl" id="rightBtn">Rechts</button>
+  </section>
+</main>
+
+<script>
+const canvas=document.getElementById("game");
+const ctx=canvas.getContext("2d");
+
+const scoreEl=document.getElementById("score");
+const highscoreEl=document.getElementById("highscore");
+const pipesEl=document.getElementById("pipes");
+const statusEl=document.getElementById("status");
+const quoteEl=document.getElementById("quote");
+const fillEl=document.getElementById("fill");
+const start=document.getElementById("start");
+const over=document.getElementById("over");
+const startBtn=document.getElementById("startBtn");
+const restartBtn=document.getElementById("restartBtn");
+const endText=document.getElementById("endText");
+const bossBanner=document.getElementById("bossBanner");
+const bossName=document.getElementById("bossName");
+
+const W=1200;
+const H=620;
+const GRAVITY=.82;
+
+let running=false;
+let dead=false;
+let frame=0;
+let score=0;
+let pipes=0;
+let highscore=Number(localStorage.getItem("wilco_mario_highscore")||0);
+let parra=0;
+let cameraX=0;
+let shake=0;
+let keys={left:false,right:false,jump:false};
+let platforms=[];
+let items=[];
+let enemies=[];
+let particles=[];
+let popups=[];
+let nextEnemyAt=900;
+
+const player={
+  x:90,
+  y:320,
+  w:48,
+  h:74,
+  vx:0,
+  vy:0,
+  speed:6,
+  grounded:false,
+  facing:1
+};
+
+const enemyNames=[
+  "Jelmer de linkse propaganda stofzuiger",
+  "Stefanie de luie bankhang ninja",
+  "De accountant met een spreadsheet aura",
+  "Kevin de KPI eindbaas",
+  "De rondleiding die nooit kwam"
+];
+
+const quotes=[
+  "Wilco vertrouwt de loopband niet.",
+  "De dumbbells fluisteren terug.",
+  "Friesland is in pixels geladen.",
+  "De pijpjes zijn duidelijk geen goed plan.",
+  "Parra stijgt. Verstand daalt.",
+  "Jelmer zuigt alle rust uit de kamer.",
+  "De vloer heeft een mening.",
+  "KPI status: volledig ontspoord."
+];
+
+const Audio={
+  ctx:null,
+  init(){
+    if(!this.ctx)this.ctx=new(window.AudioContext||window.webkitAudioContext)();
+    if(this.ctx.state==="suspended")this.ctx.resume();
+  },
+  tone(f,d,type="sine",g=.04,slide=0){
+    if(!this.ctx)return;
+    const o=this.ctx.createOscillator();
+    const v=this.ctx.createGain();
+    o.type=type;
+    o.frequency.setValueAtTime(f,this.ctx.currentTime);
+    if(slide)o.frequency.exponentialRampToValueAtTime(Math.max(40,f+slide),this.ctx.currentTime+d);
+    v.gain.setValueAtTime(g,this.ctx.currentTime);
+    v.gain.exponentialRampToValueAtTime(.001,this.ctx.currentTime+d);
+    o.connect(v);v.connect(this.ctx.destination);
+    o.start();o.stop(this.ctx.currentTime+d);
+  },
+  noise(d=.15,g=.05){
+    if(!this.ctx)return;
+    const len=this.ctx.sampleRate*d;
+    const b=this.ctx.createBuffer(1,len,this.ctx.sampleRate);
+    const data=b.getChannelData(0);
+    for(let i=0;i<len;i++)data[i]=(Math.random()*2-1)*Math.pow(1-i/len,2);
+    const s=this.ctx.createBufferSource();
+    const v=this.ctx.createGain();
+    v.gain.value=g;s.buffer=b;s.connect(v);v.connect(this.ctx.destination);s.start();
+  },
+  jump(){this.tone(260,.1,"square",.045,330)},
+  pipe(){this.tone(620,.08,"triangle",.04,350);setTimeout(()=>this.tone(900,.08,"sine",.035,200),45)},
+  enemy(){this.noise(.25,.045);this.tone(95,.25,"sawtooth",.04,80)},
+  die(){this.noise(.35,.08);this.tone(150,.35,"sawtooth",.06,-70)}
+};
+
+function resize(){
+  const r=canvas.parentElement.getBoundingClientRect();
+  const dpr=Math.min(devicePixelRatio||1,2);
+  canvas.width=r.width*dpr;
+  canvas.height=r.height*dpr;
+  ctx.setTransform(canvas.width/W,0,0,canvas.height/H,0,0);
+}
+
+function roundRect(x,y,w,h,r){
+  ctx.beginPath();
+  ctx.roundRect(x,y,w,h,r);
+  ctx.fill();
+}
+
+function buildWorld(){
+  platforms=[
+    {x:0,y:510,w:850,h:110,type:"grass"},
+    {x:950,y:470,w:260,h:150,type:"grass"},
+    {x:1330,y:430,w:320,h:190,type:"grass"},
+    {x:1770,y:500,w:420,h:120,type:"grass"},
+    {x:2360,y:455,w:300,h:165,type:"grass"},
+    {x:2780,y:390,w:340,h:230,type:"grass"},
+    {x:3240,y:500,w:560,h:120,type:"grass"},
+    {x:3920,y:450,w:420,h:170,type:"grass"},
+    {x:4480,y:505,w:760,h:115,type:"grass"}
+  ];
+
+  items=[];
+  for(let i=0;i<34;i++){
+    const p=platforms[Math.floor(Math.random()*platforms.length)];
+    items.push({
+      x:p.x+80+Math.random()*(p.w-160),
+      y:p.y-48-Math.random()*86,
+      r:18,
+      pulse:Math.random()*10
+    });
+  }
+
+  enemies=[];
+  nextEnemyAt=700;
+}
+
+function reset(){
+  running=true;
+  dead=false;
+  frame=0;
+  score=0;
+  pipes=0;
+  parra=0;
+  cameraX=0;
+  shake=0;
+  player.x=90;
+  player.y=300;
+  player.vx=0;
+  player.vy=0;
+  player.grounded=false;
+  particles=[];
+  popups=[];
+  buildWorld();
+  start.classList.add("hidden");
+  over.classList.add("hidden");
+  bossBanner.classList.add("hidden");
+  updateUI();
+}
+
+function startGame(){
+  Audio.init();
+  reset();
+}
+
+function die(){
+  if(dead)return;
+  dead=true;
+  running=false;
+  Audio.die();
+  shake=30;
+  if(score>highscore){
+    highscore=score;
+    localStorage.setItem("wilco_mario_highscore",String(highscore));
+  }
+  const lines=[
+    "Wilco werd gestofzuigd door propaganda.",
+    "Wilco sprong te laat en dacht dat dat bewust beleid was.",
+    "De pijpjes wonnen. Wilco verloor de plot.",
+    "KPI gehaald: maximale chaos.",
+    "Een vijand raakte Wilco. Friesland stond stil."
+  ];
+  endText.textContent=lines[Math.floor(Math.random()*lines.length)];
+  over.classList.remove("hidden");
+  updateUI();
+}
+
+function addParticles(x,y,c,count=18){
+  for(let i=0;i<count;i++){
+    particles.push({
+      x,y,
+      vx:(Math.random()-.5)*9,
+      vy:(Math.random()-.8)*8,
+      life:38+Math.random()*16,
+      color:c,
+      s:3+Math.random()*5
+    });
+  }
+}
+
+function popup(x,y,t,c="#fff"){
+  popups.push({x,y,t,c,life:60});
+}
+
+function announceEnemy(name){
+  bossName.textContent=name;
+  bossBanner.classList.remove("hidden");
+  Audio.enemy();
+  setTimeout(()=>bossBanner.classList.add("hidden"),1700);
+}
+
+function spawnEnemy(){
+  const name=enemyNames[Math.floor(Math.random()*enemyNames.length)];
+  const p=platforms.find(p=>p.x>cameraX+W*.75) || platforms[Math.floor(Math.random()*platforms.length)];
+  enemies.push({
+    name,
+    x:p.x+p.w-90,
+    y:p.y-66,
+    w:58,
+    h:66,
+    vx:-2.2-Math.random()*1.7,
+    platform:p,
+    wob:0
+  });
+  announceEnemy(name);
+  nextEnemyAt=cameraX+700+Math.random()*720;
+}
+
+function hitRect(a,b){
+  return a.x<a.x+a.w && a.x<b.x+b.w && a.x+a.w>b.x && a.y<b.y+b.h && a.y+a.h>b.y;
+}
+
+function circleRect(c,r){
+  const cx=Math.max(r.x,Math.min(c.x,r.x+r.w));
+  const cy=Math.max(r.y,Math.min(c.y,r.y+r.h));
+  const dx=c.x-cx;
+  const dy=c.y-cy;
+  return dx*dx+dy*dy<c.r*c.r;
+}
+
+function update(){
+  if(!running)return;
+  frame++;
+
+  score+=1+Math.floor(parra*.02);
+  parra=Math.min(100,parra+.012+pipes*.0007);
+
+  const move=(keys.right?1:0)-(keys.left?1:0);
+  player.vx+=move*.9;
+  player.vx*=.82;
+  player.vx=Math.max(-player.speed,Math.min(player.speed,player.vx));
+  if(move)player.facing=move;
+
+  if(keys.jump && player.grounded){
+    player.vy=-17;
+    player.grounded=false;
+    Audio.jump();
+    popup(player.x,player.y-10,"HOPPA","#fff");
+  }
+
+  player.vy+=GRAVITY;
+  player.x+=player.vx;
+  player.y+=player.vy;
+
+  player.grounded=false;
+  for(const p of platforms){
+    if(player.x+player.w>p.x && player.x<p.x+p.w){
+      const prevBottom=player.y+player.h-player.vy;
+      const bottom=player.y+player.h;
+      if(prevBottom<=p.y && bottom>=p.y && player.vy>=0){
+        player.y=p.y-player.h;
+        player.vy=0;
+        player.grounded=true;
       }
     }
+  }
 
-    function drawBackground() {
-      const sky = ctx.createLinearGradient(0, 0, 0, WORLD.height);
-      sky.addColorStop(0, "#090909");
-      sky.addColorStop(.55, "#111111");
-      sky.addColorStop(1, "#070707");
+  if(player.y>H+220)die();
 
-      ctx.fillStyle = sky;
-      ctx.fillRect(0, 0, WORLD.width, WORLD.height);
+  cameraX+=(player.x-cameraX-260)*.08;
+  if(cameraX<0)cameraX=0;
 
-      const intensity = parra / 100;
+  if(cameraX>nextEnemyAt)spawnEnemy();
 
-      for (let i = 0; i < 20; i++) {
-        const x = ((frame * (.28 + i * .02) + i * 83) % (WORLD.width + 160)) - 80;
-        const y = 58 + Math.sin(frame * .012 + i) * 18 + i * 9;
+  for(const e of enemies){
+    e.x+=e.vx;
+    e.wob+=.12;
+    const p=e.platform;
+    if(e.x<p.x+20 || e.x+e.w>p.x+p.w-20)e.vx*=-1;
 
-        ctx.globalAlpha = .08 + intensity * .16;
-        ctx.fillStyle = i % 2 ? "#ff7a1a" : "#a855f7";
-        ctx.beginPath();
-        ctx.arc(x, y, 18 + Math.sin(frame * .03 + i) * 6, 0, Math.PI * 2);
-        ctx.fill();
+    if(hitRect(player,e)){
+      if(player.vy>2 && player.y+player.h-14<e.y+18){
+        e.dead=true;
+        player.vy=-12;
+        score+=350;
+        addParticles(e.x+e.w/2,e.y+e.h/2,"#ff3344",28);
+        popup(e.x,e.y-20,"BONK +350","#ffd84d");
+        Audio.pipe();
+      }else{
+        die();
       }
-
-      ctx.globalAlpha = 1;
-
-      ctx.strokeStyle = `rgba(255,122,26,${.08 + intensity * .22})`;
-      ctx.lineWidth = 2;
-
-      for (let x = -80; x < WORLD.width + 80; x += 70) {
-        const offset = (frame * speed * .35) % 70;
-        ctx.beginPath();
-        ctx.moveTo(x - offset, WORLD.ground + 22);
-        ctx.lineTo(x + 40 - offset, WORLD.height);
-        ctx.stroke();
-      }
-
-      ctx.fillStyle = "#151515";
-      ctx.fillRect(0, WORLD.ground, WORLD.width, WORLD.height - WORLD.ground);
-
-      ctx.fillStyle = "#222";
-      ctx.fillRect(0, WORLD.ground, WORLD.width, 8);
-
-      ctx.fillStyle = `rgba(255,122,26,${.18 + intensity * .26})`;
-      ctx.fillRect(0, WORLD.ground + 8, WORLD.width, 3);
     }
+  }
+  enemies=enemies.filter(e=>!e.dead);
 
-    function drawPlayer() {
-      const x = player.x;
-      const y = player.y;
-      const h = player.h;
+  const box={x:player.x+7,y:player.y+5,w:player.w-14,h:player.h-5};
+  for(let i=items.length-1;i>=0;i--){
+    const it=items[i];
+    it.pulse+=.12;
+    if(circleRect(it,box)){
+      items.splice(i,1);
+      pipes++;
+      parra=Math.min(100,parra+7);
+      score+=220;
+      shake=Math.min(18,shake+5);
+      addParticles(it.x,it.y,"#4dd7ff",24);
+      popup(it.x-16,it.y-28,"PIJPJE +220","#4dd7ff");
+      Audio.pipe();
+    }
+  }
 
-      ctx.save();
+  particles.forEach(p=>{p.x+=p.vx;p.y+=p.vy;p.vy+=.18;p.life--});
+  popups.forEach(p=>{p.y-=.7;p.life--});
+  particles=particles.filter(p=>p.life>0);
+  popups=popups.filter(p=>p.life>0);
 
-      if (parra > 55) {
-        ctx.translate(Math.sin(frame * .6) * parra * .012, Math.cos(frame * .47) * parra * .01);
-      }
+  shake*=.86;
+  updateUI();
+}
 
-      ctx.fillStyle = "#f2c68e";
+function updateUI(){
+  scoreEl.textContent=score;
+  highscoreEl.textContent=highscore;
+  pipesEl.textContent=pipes;
+  fillEl.style.width=parra+"%";
+
+  if(parra<30)statusEl.textContent="Chill";
+  else if(parra<58)statusEl.textContent="Raar";
+  else if(parra<82)statusEl.textContent="Schichtig";
+  else statusEl.textContent="Parra";
+
+  quoteEl.textContent=quotes[Math.floor(frame/130)%quotes.length];
+}
+
+function drawCloud(x,y,s){
+  ctx.fillStyle="rgba(255,255,255,.88)";
+  ctx.beginPath();
+  ctx.arc(x,y,s,0,Math.PI*2);
+  ctx.arc(x+s*.8,y+s*.1,s*.75,0,Math.PI*2);
+  ctx.arc(x-s*.7,y+s*.16,s*.65,0,Math.PI*2);
+  ctx.fill();
+}
+
+function drawBg(){
+  const grd=ctx.createLinearGradient(0,0,0,H);
+  grd.addColorStop(0,"#89e1ff");
+  grd.addColorStop(.56,"#ffd18a");
+  grd.addColorStop(1,"#ff9b5f");
+  ctx.fillStyle=grd;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.translate(-cameraX*.25,0);
+  drawCloud(170,85,34);
+  drawCloud(520,135,28);
+  drawCloud(880,75,38);
+  drawCloud(1300,115,30);
+  drawCloud(1720,82,36);
+  ctx.restore();
+
+  ctx.save();
+  ctx.translate(-cameraX*.45,0);
+  for(let x=-200;x<cameraX+W+500;x+=360){
+    ctx.fillStyle="#5ba05b";
+    ctx.beginPath();
+    ctx.moveTo(x,510);
+    ctx.lineTo(x+180,270);
+    ctx.lineTo(x+360,510);
+    ctx.fill();
+    ctx.fillStyle="#77c96c";
+    ctx.beginPath();
+    ctx.moveTo(x+80,510);
+    ctx.lineTo(x+180,310);
+    ctx.lineTo(x+260,510);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawPlatforms(){
+  for(const p of platforms){
+    const x=p.x-cameraX;
+    if(x+p.w<-100||x>W+100)continue;
+
+    ctx.fillStyle="#35b65b";
+    roundRect(x,p.y,p.w,28,14);
+
+    ctx.fillStyle="#8b4b24";
+    ctx.fillRect(x,p.y+22,p.w,p.h-22);
+
+    ctx.fillStyle="rgba(0,0,0,.14)";
+    for(let bx=x;bx<x+p.w;bx+=42){
+      ctx.fillRect(bx,p.y+48,24,9);
+      ctx.fillRect(bx+18,p.y+88,28,9);
+    }
+  }
+}
+
+function drawPipeItem(it){
+  const x=it.x-cameraX;
+  const y=it.y;
+  const pulse=Math.sin(it.pulse)*3;
+
+  ctx.save();
+  ctx.translate(x,y);
+  ctx.rotate(Math.sin(it.pulse)*.18);
+  ctx.shadowColor="#4dd7ff";
+  ctx.shadowBlur=22;
+  ctx.fillStyle="#f7f1df";
+  roundRect(-22,-9,44,18,9);
+  ctx.fillStyle="#ff7a1a";
+  ctx.beginPath();
+  ctx.arc(23,0,7+pulse*.18,0,Math.PI*2);
+  ctx.fill();
+  ctx.shadowBlur=0;
+  ctx.fillStyle="#20140c";
+  ctx.font="900 11px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("PIPE",0,4);
+  ctx.restore();
+}
+
+function drawEnemy(e){
+  const x=e.x-cameraX;
+  const y=e.y+Math.sin(e.wob)*4;
+
+  ctx.save();
+  ctx.translate(x+e.w/2,y+e.h/2);
+  ctx.rotate(Math.sin(e.wob)*.06);
+  ctx.translate(-e.w/2,-e.h/2);
+
+  if(e.name.includes("stofzuiger")){
+    ctx.fillStyle="#a855f7";
+    roundRect(0,16,62,38,16);
+    ctx.fillStyle="#222";
+    ctx.beginPath();ctx.arc(14,56,8,0,Math.PI*2);ctx.arc(48,56,8,0,Math.PI*2);ctx.fill();
+    ctx.fillStyle="#fff";
+    ctx.font="900 11px Arial";
+    ctx.textAlign="center";
+    ctx.fillText("JELMER",31,39);
+    ctx.strokeStyle="#ff3344";
+    ctx.lineWidth=5;
+    ctx.beginPath();ctx.moveTo(60,34);ctx.lineTo(84,25);ctx.stroke();
+  }else if(e.name.includes("Kevin")){
+    ctx.fillStyle="#ff7a1a";
+    roundRect(5,0,48,64,15);
+    ctx.fillStyle="#fff";
+    ctx.font="900 10px Arial";
+    ctx.textAlign="center";
+    ctx.fillText("KPI",29,37);
+  }else{
+    ctx.fillStyle="#ff3344";
+    roundRect(4,5,52,58,16);
+    ctx.fillStyle="#fff";
+    ctx.font="900 10px Arial";
+    ctx.textAlign="center";
+    ctx.fillText("VIJAND",30,38);
+  }
+
+  ctx.restore();
+}
+
+function drawPlayer(){
+  const x=player.x-cameraX;
+  const y=player.y;
+  const wob=Math.sin(frame*.18)*2;
+
+  ctx.save();
+  ctx.translate(x+player.w/2,y+player.h/2);
+  ctx.scale(player.facing,1);
+  ctx.translate(-player.w/2,-player.h/2);
+
+  ctx.fillStyle="#f2c58a";
+  roundRect(9,0,32,31,12);
+
+  ctx.fillStyle="#ffcf3f";
+  roundRect(2,29+wob,44,46,15);
+
+  ctx.fillStyle="#111";
+  ctx.beginPath();
+  ctx.arc(18,12,3.5,0,Math.PI*2);
+  ctx.arc(31,12,3.5,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.strokeStyle=parra>65?"#ff3344":"#23160f";
+  ctx.lineWidth=3;
+  ctx.beginPath();
+  ctx.moveTo(17,23);
+  ctx.quadraticCurveTo(25,28+Math.sin(frame*.4)*4,36,23);
+  ctx.stroke();
+
+  ctx.fillStyle="#4dd7ff";
+  ctx.fillRect(1,70,17,9);
+  ctx.fillRect(29,70,17,9);
+
+  ctx.fillStyle="#f7f1df";
+  ctx.fillRect(39,33,28,8);
+  ctx.fillStyle="#ff7a1a";
+  ctx.beginPath();
+  ctx.arc(69,37,6+Math.sin(frame*.22)*1.5,0,Math.PI*2);
+  ctx.fill();
+
+  ctx.fillStyle="#21160f";
+  ctx.font="900 9px Arial";
+  ctx.textAlign="center";
+  ctx.fillText("WILCO",24,55);
+
+  ctx.restore();
+}
+
+function drawFX(){
+  for(const p of particles){
+    ctx.globalAlpha=Math.max(0,p.life/54);
+    ctx.fillStyle=p.color;
+    ctx.beginPath();
+    ctx.arc(p.x-cameraX,p.y,p.s,0,Math.PI*2);
+    ctx.fill();
+  }
+  ctx.globalAlpha=1;
+
+  for(const p of popups){
+    ctx.globalAlpha=Math.max(0,p.life/60);
+    ctx.fillStyle=p.c;
+    ctx.font="1000 22px Arial";
+    ctx.strokeStyle="rgba(0,0,0,.5)";
+    ctx.lineWidth=5;
+    ctx.strokeText(p.t,p.x-cameraX,p.y);
+    ctx.fillText(p.t,p.x-cameraX,p.y);
+  }
+  ctx.globalAlpha=1;
+
+  if(parra>55){
+    ctx.globalAlpha=(parra-55)/140;
+    ctx.fillStyle="#ff3344";
+    ctx.fillRect(0,0,W,H);
+    ctx.globalAlpha=1;
+  }
+
+  if(parra>80){
+    ctx.save();
+    ctx.globalAlpha=.18;
+    ctx.strokeStyle="#9b5cff";
+    ctx.lineWidth=3;
+    for(let i=0;i<12;i++){
       ctx.beginPath();
-      ctx.roundRect(x + 13, y, 30, 31, 10);
-      ctx.fill();
-
-      ctx.fillStyle = "#ffcc4d";
-      ctx.beginPath();
-      ctx.roundRect(x + 5, y + 29, 46, h - 27, 13);
-      ctx.fill();
-
-      ctx.fillStyle = "#111";
-      ctx.fillRect(x + 20, y + 11, 4, 4);
-      ctx.fillRect(x + 33, y + 11, 4, 4);
-
-      ctx.strokeStyle = parra > 70 ? "#ff3b30" : "#1b1b1b";
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(x + 22, y + 21);
-      ctx.quadraticCurveTo(x + 29, y + 25 + Math.sin(frame * .35) * 4, x + 38, y + 21);
+      ctx.moveTo(Math.random()*W,Math.random()*H);
+      ctx.lineTo(Math.random()*W,Math.random()*H);
       ctx.stroke();
-
-      ctx.fillStyle = "#38bdf8";
-      ctx.fillRect(x + 8, y + h - 5, 15, 9);
-      ctx.fillRect(x + 33, y + h - 5, 15, 9);
-
-      ctx.fillStyle = "#e8e0d2";
-      ctx.fillRect(x + 40, y + 31, 28, 9);
-
-      ctx.fillStyle = "#ff7a1a";
-      ctx.beginPath();
-      ctx.arc(x + 70, y + 35, 5 + Math.sin(frame * .2) * 1.5, 0, Math.PI * 2);
-      ctx.fill();
-
-      ctx.fillStyle = "rgba(255,255,255,.2)";
-      ctx.font = "900 9px Arial";
-      ctx.fillText("FRIES", x + 14, y + 52);
-
-      ctx.restore();
     }
+    ctx.restore();
+  }
+}
 
-    function drawObstacles() {
-      obstacles.forEach(o => {
-        const wobble = Math.sin(o.wobble) * (parra > 55 ? 4 : 1);
+function draw(){
+  ctx.save();
+  if(shake>.5)ctx.translate((Math.random()-.5)*shake,(Math.random()-.5)*shake);
+  drawBg();
+  ctx.save();
+  ctx.translate(0,0);
+  drawPlatforms();
+  items.forEach(drawPipeItem);
+  enemies.forEach(drawEnemy);
+  drawPlayer();
+  drawFX();
+  ctx.restore();
+  ctx.restore();
+}
 
-        ctx.save();
-        ctx.translate(o.x + o.w / 2, o.y + o.h / 2);
-        ctx.rotate(wobble * .015);
-        ctx.translate(-o.w / 2, -o.h / 2);
+function loop(){
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
 
-        ctx.fillStyle = o.color;
-        ctx.beginPath();
-        ctx.roundRect(0, 0, o.w, o.h, 9);
-        ctx.fill();
+function bindHold(btn,key){
+  btn.addEventListener("pointerdown",e=>{e.preventDefault();keys[key]=true});
+  btn.addEventListener("pointerup",()=>keys[key]=false);
+  btn.addEventListener("pointercancel",()=>keys[key]=false);
+  btn.addEventListener("pointerleave",()=>keys[key]=false);
+}
 
-        ctx.fillStyle = "rgba(0,0,0,.22)";
-        ctx.fillRect(0, o.h * .58, o.w, 5);
+bindHold(document.getElementById("leftBtn"),"left");
+bindHold(document.getElementById("rightBtn"),"right");
+bindHold(document.getElementById("jumpBtn"),"jump");
 
-        ctx.fillStyle = "#fff";
-        ctx.font = "900 10px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText(o.text, o.w / 2, o.h / 2 + 4);
+document.addEventListener("keydown",e=>{
+  if(e.code==="ArrowLeft"||e.code==="KeyA")keys.left=true;
+  if(e.code==="ArrowRight"||e.code==="KeyD")keys.right=true;
+  if(e.code==="Space"||e.code==="ArrowUp"||e.code==="KeyW"){
+    e.preventDefault();
+    if(!running)startGame();
+    keys.jump=true;
+  }
+});
+document.addEventListener("keyup",e=>{
+  if(e.code==="ArrowLeft"||e.code==="KeyA")keys.left=false;
+  if(e.code==="ArrowRight"||e.code==="KeyD")keys.right=false;
+  if(e.code==="Space"||e.code==="ArrowUp"||e.code==="KeyW")keys.jump=false;
+});
 
-        ctx.restore();
-      });
+startBtn.onclick=startGame;
+restartBtn.onclick=startGame;
+window.addEventListener("resize",resize);
 
-      ctx.textAlign = "left";
-    }
-
-    function drawClouds() {
-      clouds.forEach(c => {
-        const pulse = Math.sin(c.pulse) * 4;
-
-        ctx.save();
-        ctx.globalAlpha = .92;
-        ctx.fillStyle = "#38bdf8";
-        ctx.shadowColor = "#38bdf8";
-        ctx.shadowBlur = 22 + parra * .18;
-
-        ctx.beginPath();
-        ctx.arc(c.x, c.y, c.r + pulse, 0, Math.PI * 2);
-        ctx.arc(c.x + c.r * .75, c.y + 3, c.r * .75 + pulse * .4, 0, Math.PI * 2);
-        ctx.arc(c.x - c.r * .7, c.y + 5, c.r * .65 + pulse * .25, 0, Math.PI * 2);
-        ctx.fill();
-
-        ctx.shadowBlur = 0;
-        ctx.fillStyle = "#021016";
-        ctx.font = "900 13px Arial";
-        ctx.textAlign = "center";
-        ctx.fillText("?", c.x, c.y + 5);
-        ctx.restore();
-      });
-
-      ctx.textAlign = "left";
-    }
-
-    function drawParticles() {
-      particles.forEach(p => {
-        ctx.globalAlpha = Math.max(0, p.life / 42);
-        ctx.fillStyle = p.color;
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
-        ctx.fill();
-      });
-
-      ctx.globalAlpha = 1;
-    }
-
-    function drawTexts() {
-      texts.forEach(t => {
-        ctx.globalAlpha = Math.max(0, t.life / 54);
-        ctx.fillStyle = "#fff";
-        ctx.font = "900 22px Arial";
-        ctx.fillText(t.text, t.x, t.y);
-      });
-
-      ctx.globalAlpha = 1;
-    }
-
-    function drawParraEffects() {
-      const intensity = parra / 100;
-
-      if (intensity > .35) {
-        ctx.save();
-        ctx.globalAlpha = (intensity - .35) * .25;
-        ctx.fillStyle = "#ff3b30";
-        ctx.fillRect(0, 0, WORLD.width, WORLD.height);
-        ctx.restore();
-      }
-
-      if (intensity > .6) {
-        ctx.save();
-        ctx.globalAlpha = (intensity - .6) * .5;
-        ctx.strokeStyle = "#a855f7";
-        ctx.lineWidth = 2;
-
-        for (let i = 0; i < 9; i++) {
-          ctx.beginPath();
-          ctx.moveTo(Math.random() * WORLD.width, Math.random() * WORLD.height);
-          ctx.lineTo(Math.random() * WORLD.width, Math.random() * WORLD.height);
-          ctx.stroke();
-        }
-
-        ctx.restore();
-      }
-
-      if (intensity > .82) {
-        ctx.save();
-        ctx.globalAlpha = .16;
-        ctx.fillStyle = "#fff";
-
-        for (let i = 0; i < 80; i++) {
-          ctx.fillRect(Math.random() * WORLD.width, Math.random() * WORLD.height, 1.5, 1.5);
-        }
-
-        ctx.restore();
-      }
-    }
-
-    function draw() {
-      ctx.save();
-
-      if (shake > .4) {
-        ctx.translate((Math.random() - .5) * shake, (Math.random() - .5) * shake);
-      }
-
-      drawBackground();
-      drawClouds();
-      drawObstacles();
-      drawPlayer();
-      drawParticles();
-      drawTexts();
-      drawParraEffects();
-
-      ctx.restore();
-    }
-
-    function loop() {
-      update();
-      draw();
-      requestAnimationFrame(loop);
-    }
-
-    window.addEventListener("resize", resize);
-
-    startBtn.addEventListener("click", startGame);
-    restartBtn.addEventListener("click", startGame);
-
-    jumpBtn.addEventListener("pointerdown", jump);
-    duckBtn.addEventListener("pointerdown", () => setDuck(true));
-    duckBtn.addEventListener("pointerup", () => setDuck(false));
-    duckBtn.addEventListener("pointercancel", () => setDuck(false));
-    duckBtn.addEventListener("pointerleave", () => setDuck(false));
-
-    canvas.addEventListener("pointerdown", jump);
-
-    document.addEventListener("keydown", e => {
-      if (e.code === "Space") {
-        e.preventDefault();
-
-        if (!running && !gameOver) startGame();
-        else if (gameOver) startGame();
-        else jump();
-      }
-
-      if (e.code === "ArrowDown" || e.code === "KeyS") {
-        setDuck(true);
-      }
-    });
-
-    document.addEventListener("keyup", e => {
-      if (e.code === "ArrowDown" || e.code === "KeyS") {
-        setDuck(false);
-      }
-    });
-
-    highscoreEl.textContent = highscore;
-    resize();
-    draw();
-    loop();
-  </script>
+highscoreEl.textContent=highscore;
+resize();
+buildWorld();
+draw();
+loop();
+</script>
 </body>
 </html>
