@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="UTF-8">
+<title>Wilco en de Pijp</title>
+<style>
+  html,body{margin:0;padding:0;background:#0d0d0d;color:#fff;font-family:Arial}
+  canvas{display:block;margin:0 auto;background:#111;border:2px solid #222}
+  .ui{position:fixed;top:10px;left:50%;transform:translateX(-50%);text-align:center}
+  .bar{width:300px;height:10px;background:#222;margin-top:6px;border-radius:10px;overflow:hidden}
+  .fill{height:100%;background:#ff6a00;width:0%}
+</style>
+</head>
+<body>
+
+<div class="ui">
+  <div>Wilco en de Pijp</div>
+  <div>Score: <span id="score">0</span></div>
+  <div>Parra level</div>
+  <div class="bar"><div id="parra" class="fill"></div></div>
+</div>
+
+<canvas id="game" width="800" height="400"></canvas>
+
+<script>
+const canvas = document.getElementById("game");
+const ctx = canvas.getContext("2d");
+
+let player = {
+  x: 100,
+  y: 300,
+  w: 40,
+  h: 60,
+  vy: 0,
+  jump: -12,
+  grounded: true
+};
+
+let gravity = 0.6;
+let obstacles = [];
+let items = [];
+let score = 0;
+let parra = 0;
+let speed = 4;
+
+function spawnObstacle() {
+  obstacles.push({
+    x: canvas.width,
+    y: 320,
+    w: 30,
+    h: 40
+  });
+}
+
+function spawnItem() {
+  items.push({
+    x: canvas.width,
+    y: 280,
+    r: 10
+  });
+}
+
+setInterval(spawnObstacle, 2000);
+setInterval(spawnItem, 1500);
+
+document.addEventListener("keydown", e => {
+  if (e.code === "Space" && player.grounded) {
+    player.vy = player.jump;
+    player.grounded = false;
+  }
+});
+
+function update() {
+  player.vy += gravity;
+  player.y += player.vy;
+
+  if (player.y >= 300) {
+    player.y = 300;
+    player.vy = 0;
+    player.grounded = true;
+  }
+
+  obstacles.forEach(o => o.x -= speed);
+  items.forEach(i => i.x -= speed);
+
+  obstacles = obstacles.filter(o => o.x > -50);
+  items = items.filter(i => i.x > -50);
+
+  obstacles.forEach(o => {
+    if (
+      player.x < o.x + o.w &&
+      player.x + player.w > o.x &&
+      player.y < o.y + o.h &&
+      player.y + player.h > o.y
+    ) {
+      resetGame();
+    }
+  });
+
+  items.forEach((i, index) => {
+    let dx = player.x + player.w/2 - i.x;
+    let dy = player.y + player.h/2 - i.y;
+    let dist = Math.sqrt(dx*dx + dy*dy);
+
+    if (dist < 30) {
+      items.splice(index,1);
+      score += 10;
+      parra += 10;
+      if (parra > 100) parra = 100;
+    }
+  });
+
+  parra += 0.02;
+
+  if (parra > 70) {
+    speed = 6;
+    canvas.style.filter = "blur(1px) contrast(1.2)";
+  }
+  if (parra > 90) {
+    speed = 8;
+    canvas.style.filter = "blur(2px) contrast(1.5)";
+  }
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("parra").style.width = parra + "%";
+}
+
+function draw() {
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+
+  ctx.fillStyle = "#222";
+  ctx.fillRect(0,360,canvas.width,40);
+
+  ctx.fillStyle = "#ffcc00";
+  ctx.fillRect(player.x, player.y, player.w, player.h);
+
+  ctx.fillStyle = "#ff0000";
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.w, o.h));
+
+  ctx.fillStyle = "#00ffcc";
+  items.forEach(i => {
+    ctx.beginPath();
+    ctx.arc(i.x, i.y, i.r, 0, Math.PI*2);
+    ctx.fill();
+  });
+}
+
+function loop() {
+  update();
+  draw();
+  requestAnimationFrame(loop);
+}
+
+function resetGame() {
+  score = 0;
+  parra = 0;
+  speed = 4;
+  obstacles = [];
+  items = [];
+  canvas.style.filter = "none";
+}
+
+loop();
+</script>
+
+</body>
+</html>
